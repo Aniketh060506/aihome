@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
-import { ArrowLeft, Plus, Trash2, Key, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Key, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2, Moon, Sun } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { apiService } from '../services/apiService';
 
