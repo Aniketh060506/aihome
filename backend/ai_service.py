@@ -49,13 +49,13 @@ def detect_api_key_provider(api_key: str) -> str:
     
     api_key = api_key.strip()
     
+    # Anthropic keys (check first as they also start with 'sk-')
+    if api_key.startswith('sk-ant-'):
+        return "anthropic"
+    
     # OpenAI keys
     if api_key.startswith('sk-proj-') or api_key.startswith('sk-'):
         return "openai"
-    
-    # Anthropic keys
-    if api_key.startswith('sk-ant-'):
-        return "anthropic"
     
     # Google keys
     if api_key.startswith('AIza'):
