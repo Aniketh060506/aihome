@@ -228,7 +228,7 @@ class BackendTester:
     
     def test_chat_completions(self):
         """Test POST /api/chat/completions - Chat completion endpoint"""
-        print("\\n=== Testing Chat Completions Endpoint ===")
+        print("\n=== Testing Chat Completions Endpoint ===")
         
         test_cases = [
             {
@@ -238,8 +238,8 @@ class BackendTester:
                     "provider": "openai",
                     "model": "gpt-4o-mini"
                 },
-                "expected_status": 400,
-                "expected_error": "API key is required"
+                "expected_status": 422,  # Pydantic validation error
+                "expected_error": "Field required"
             },
             {
                 "name": "Missing Messages",
@@ -248,8 +248,8 @@ class BackendTester:
                     "provider": "openai", 
                     "model": "gpt-4o-mini"
                 },
-                "expected_status": 400,
-                "expected_error": "Messages are required"
+                "expected_status": 422,  # Pydantic validation error
+                "expected_error": "Field required"
             },
             {
                 "name": "Valid Request Structure (will fail without real key)",
@@ -267,7 +267,7 @@ class BackendTester:
         ]
         
         for test_case in test_cases:
-            print(f"\\nTesting: {test_case['name']}")
+            print(f"\nTesting: {test_case['name']}")
             
             result = self.run_curl_command("POST", "/chat/completions", test_case["data"])
             
