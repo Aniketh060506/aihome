@@ -370,7 +370,7 @@ class BackendTester:
     
     def print_summary(self):
         """Print test summary"""
-        print("\\n" + "=" * 60)
+        print("\n" + "=" * 60)
         print("TEST SUMMARY")
         print("=" * 60)
         
@@ -383,7 +383,7 @@ class BackendTester:
         print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
         if self.failed_tests:
-            print("\\nFAILED TESTS:")
+            print("\nFAILED TESTS:")
             print("-" * 40)
             for test in self.failed_tests:
                 print(f"❌ {test['test_name']}")
@@ -392,7 +392,7 @@ class BackendTester:
                 print(f"   Error: {test['details'].get('error', 'Unknown error')}")
                 print()
         
-        print("\\nPASSED TESTS:")
+        print("\nPASSED TESTS:")
         print("-" * 40)
         for test in self.results:
             if test["passed"]:
