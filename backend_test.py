@@ -96,7 +96,7 @@ class BackendTester:
     
     def test_health_check(self):
         """Test GET /api/ - Health check endpoint"""
-        print("\\n=== Testing Health Check Endpoint ===")
+        print("\n=== Testing Health Check Endpoint ===")
         
         result = self.run_curl_command("GET", "/")
         
