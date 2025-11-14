@@ -284,9 +284,9 @@ class BackendTester:
                 try:
                     response_data = json.loads(result["response"])
                     
-                    # Check for validation errors (400 status)
-                    if test_case["expected_status"] == 400:
-                        if (result["status_code"] == 400 and 
+                    # Check for validation errors (422 status for Pydantic)
+                    if test_case["expected_status"] == 422:
+                        if (result["status_code"] == 422 and 
                             test_case["expected_error"] in result["response"]):
                             test_result["passed"] = True
                             test_result["details"] = {
@@ -298,7 +298,7 @@ class BackendTester:
                             test_result["details"] = {
                                 "status_code": result["status_code"],
                                 "response": response_data,
-                                "error": f"Expected 400 status with '{test_case['expected_error']}' error"
+                                "error": f"Expected 422 status with '{test_case['expected_error']}' error"
                             }
                     
                     # Check for valid request structure (200 status)
