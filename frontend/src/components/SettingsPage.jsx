@@ -125,20 +125,33 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
     <div className="min-h-screen p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/')}
+              className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className={`text-3xl font-bold ${\n                darkMode\n                  ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'\n                  : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'\n              }`}>
+                API Settings
+              </h1>
+              <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your AI provider keys</p>
+            </div>
+          </div>
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
-            className="hover:bg-cyan-100/50"
+            onClick={() => setDarkMode(!darkMode)}
+            className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
           >
-            <ArrowLeft className="w-5 h-5" />
+            {darkMode ? (
+              <Sun className="w-5 h-5 text-cyan-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent">
-              API Settings
-            </h1>
-            <p className="text-gray-600 mt-1">Manage your AI provider keys</p>
-          </div>
         </div>
 
         {/* Add New Key Card */}
