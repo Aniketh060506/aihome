@@ -19,7 +19,8 @@ import {
   User
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-import { detectKeyProvider, getModelsForProvider } from '../mock';
+import { getModelsForProvider } from '../mock';
+import { apiService } from '../services/apiService';
 import {
   Select,
   SelectContent,
@@ -96,8 +97,19 @@ const ChatInterface = ({
       return;
     }
 
+    if (!selectedModel) {
+      toast({
+        title: 'No model selected',
+        description: 'Please select a model first.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!activeConversation) {
       createNewConversation();
+      // Need to wait for next render cycle
+      setTimeout(() => sendMessage(), 100);
       return;
     }
 
@@ -124,29 +136,61 @@ const ChatInterface = ({
     setMessage('');
     setIsLoading(true);
 
-    // Mock response for now
-    setTimeout(() => {
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `This is a mock response. In the full version, I'll help you with cybersecurity topics using ${selectedModel || 'AI'}. Your question was: "${userMessage.content}"`,
-        timestamp: new Date().toISOString()
-      };
+    try {
+      // Get all messages for this conversation
+      const currentConv = updatedConversations.find(c => c.id === activeConversation);
+      const messages = currentConv.messages.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp
+      }));
 
-      const finalConversations = updatedConversations.map(conv => {
-        if (conv.id === activeConversation) {
-          return {
-            ...conv,
-            messages: [...conv.messages, assistantMessage],
-            updatedAt: new Date().toISOString()
-          };
-        }
-        return conv;
+      // Call AI API
+      const response = await apiService.chatCompletion(
+        messages,
+        activeKey.key,
+        activeKey.provider,
+        selectedModel,
+        activeConversation
+      );
+
+      if (response.success) {
+        const assistantMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: response.message,
+          timestamp: new Date().toISOString()
+        };
+
+        const finalConversations = updatedConversations.map(conv => {
+          if (conv.id === activeConversation) {
+            return {
+              ...conv,
+              messages: [...conv.messages, assistantMessage],
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return conv;
+        });
+
+        setConversations(finalConversations);
+      } else {
+        toast({
+          title: 'Error',
+          description: response.error || 'Failed to get response from AI',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please check your API key.',
+        variant: 'destructive'
       });
-
-      setConversations(finalConversations);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e) => {

@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
-import { ArrowLeft, Plus, Trash2, Key, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Key, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-import { detectKeyProvider, getModelsForProvider } from '../mock';
+import { apiService } from '../services/apiService';
 
 const SettingsPage = ({ apiKeys, setApiKeys }) => {
   const navigate = useNavigate();
@@ -18,15 +18,35 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
   const [showKeys, setShowKeys] = useState({});
   const [detectedProvider, setDetectedProvider] = useState(null);
   const [detectedModels, setDetectedModels] = useState([]);
+  const [isDetecting, setIsDetecting] = useState(false);
 
-  const handleKeyChange = (key) => {
+  const handleKeyChange = async (key) => {
     setNewApiKey(key);
-    const provider = detectKeyProvider(key);
-    setDetectedProvider(provider);
-    if (provider !== 'unknown') {
-      setDetectedModels(getModelsForProvider(provider));
-    } else {
+    
+    if (!key || key.length < 10) {
+      setDetectedProvider(null);
       setDetectedModels([]);
+      return;
+    }
+
+    setIsDetecting(true);
+    
+    try {
+      const result = await apiService.detectApiKey(key);
+      
+      if (result.is_valid && result.provider !== 'unknown') {
+        setDetectedProvider(result.provider);
+        setDetectedModels(result.models);
+      } else {
+        setDetectedProvider('unknown');
+        setDetectedModels([]);
+      }
+    } catch (error) {
+      console.error('Error detecting key:', error);
+      setDetectedProvider('unknown');
+      setDetectedModels([]);
+    } finally {
+      setIsDetecting(false);
     }
   };
 
@@ -40,8 +60,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
       return;
     }
 
-    const provider = detectKeyProvider(newApiKey);
-    if (provider === 'unknown') {
+    if (!detectedProvider || detectedProvider === 'unknown') {
       toast({
         title: 'Unknown key format',
         description: 'Could not detect the API provider. Please check your key.',
@@ -52,11 +71,11 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
 
     const newKey = {
       id: Date.now().toString(),
-      provider,
+      provider: detectedProvider,
       name: newKeyName,
       key: newApiKey,
       maskedKey: newApiKey.slice(0, 10) + '...' + newApiKey.slice(-4),
-      models: getModelsForProvider(provider),
+      models: detectedModels,
       isActive: apiKeys.length === 0,
       createdAt: new Date().toISOString()
     };
@@ -69,7 +88,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
     
     toast({
       title: 'API Key added successfully',
-      description: `${provider.toUpperCase()} key with ${newKey.models.length} models detected.`,
+      description: `${detectedProvider.toUpperCase()} key with ${detectedModels.length} models detected.`,
     });
   };
 
@@ -100,12 +119,6 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
     openai: 'bg-green-100 text-green-800 border-green-300',
     anthropic: 'bg-orange-100 text-orange-800 border-orange-300',
     google: 'bg-blue-100 text-blue-800 border-blue-300'
-  };
-
-  const providerIcons = {
-    openai: '🤖',
-    anthropic: '🔮',
-    google: '✨'
   };
 
   return (
@@ -152,14 +165,19 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="apiKey">API Key</Label>
-              <Input
-                id="apiKey"
-                type="password"
-                placeholder="Paste your API key here..."
-                value={newApiKey}
-                onChange={(e) => handleKeyChange(e.target.value)}
-                className="bg-white/80 border-cyan-200"
-              />
+              <div className="relative">
+                <Input
+                  id="apiKey"
+                  type="password"
+                  placeholder="Paste your API key here..."
+                  value={newApiKey}
+                  onChange={(e) => handleKeyChange(e.target.value)}
+                  className="bg-white/80 border-cyan-200"
+                />
+                {isDetecting && (
+                  <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-cyan-600" />
+                )}
+              </div>
             </div>
 
             {/* Detection Result */}
@@ -170,7 +188,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
                     <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-semibold text-gray-800 mb-2">
-                        Detected: {providerIcons[detectedProvider]} {detectedProvider.toUpperCase()}
+                        Detected: {detectedProvider.toUpperCase()}
                       </p>
                       <p className="text-sm text-gray-600 mb-2">Available Models:</p>
                       <div className="flex flex-wrap gap-2">
@@ -186,7 +204,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
               </Card>
             )}
 
-            {detectedProvider === 'unknown' && newApiKey && (
+            {detectedProvider === 'unknown' && newApiKey && !isDetecting && (
               <Card className="bg-red-50 border-red-300 animate-fade-in">
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -205,6 +223,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
             <Button
               onClick={addApiKey}
               className="w-full bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={isDetecting}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add API Key
@@ -248,7 +267,7 @@ const SettingsPage = ({ apiKeys, setApiKeys }) => {
                             <div className="flex items-center gap-2 mb-2">
                               <h3 className="font-semibold text-gray-800">{key.name}</h3>
                               <Badge className={providerColors[key.provider]}>
-                                {providerIcons[key.provider]} {key.provider.toUpperCase()}
+                                {key.provider.toUpperCase()}
                               </Badge>
                               {key.isActive && (
                                 <Badge className="bg-green-500 text-white">
