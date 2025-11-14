@@ -52,16 +52,16 @@ class BackendTester:
             cmd.extend(["-d", json.dumps(data)])
         
         # Add response headers and status code
-        cmd.extend(["-w", "\\n%{http_code}"])
+        cmd.extend(["-w", "\n%{http_code}"])
         
         try:
             print(f"Running: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             # Split response body and status code
-            output_lines = result.stdout.strip().split('\\n')
+            output_lines = result.stdout.strip().split('\n')
             if len(output_lines) >= 2:
-                response_body = '\\n'.join(output_lines[:-1])
+                response_body = '\n'.join(output_lines[:-1])
                 status_code = output_lines[-1]
             else:
                 response_body = result.stdout.strip()
