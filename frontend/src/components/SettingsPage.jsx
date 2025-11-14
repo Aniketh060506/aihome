@@ -249,13 +249,13 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
         </Card>
 
         {/* Existing Keys */}
-        <Card className="bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg">
+        <Card className={darkMode ? 'bg-black/40 backdrop-blur-lg border-cyan-500/30 cyber-border shadow-lg shadow-cyan-500/10' : 'bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg'}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5 text-cyan-600" />
+            <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-cyan-100' : ''}`}>
+              <Key className={`w-5 h-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
               Your API Keys ({apiKeys.length})
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={darkMode ? 'text-gray-400' : ''}>
               Manage and switch between your configured API keys
             </CardDescription>
           </CardHeader>
@@ -263,7 +263,7 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
             <ScrollArea className="h-[400px] pr-4">
               <div className="space-y-4">
                 {apiKeys.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
+                  <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     <Key className="w-12 h-12 mx-auto mb-3 opacity-30" />
                     <p>No API keys configured yet</p>
                     <p className="text-sm mt-1">Add your first key to get started</p>
@@ -274,26 +274,30 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                       key={key.id}
                       className={`transition-all duration-200 ${
                         key.isActive
-                          ? 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 shadow-md'
-                          : 'bg-white/60 border-gray-200'
+                          ? darkMode
+                            ? 'bg-cyan-950/50 border-cyan-500/50 shadow-md shadow-cyan-500/20'
+                            : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 shadow-md'
+                          : darkMode
+                            ? 'bg-black/40 border-cyan-500/20'
+                            : 'bg-white/60 border-gray-200'
                       }`}
                     >
                       <CardContent className="pt-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-gray-800">{key.name}</h3>
+                              <h3 className={`font-semibold ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>{key.name}</h3>
                               <Badge className={providerColors[key.provider]}>
                                 {key.provider.toUpperCase()}
                               </Badge>
                               {key.isActive && (
-                                <Badge className="bg-green-500 text-white">
+                                <Badge className={darkMode ? 'bg-green-600 text-white' : 'bg-green-500 text-white'}>
                                   Active
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-2 mb-2">
-                              <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                              <code className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-black/60 text-cyan-100' : 'bg-gray-100'}`}>
                                 {showKeys[key.id] ? key.key : key.maskedKey}
                               </code>
                               <Button
@@ -310,12 +314,12 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {key.models.slice(0, 3).map(model => (
-                                <Badge key={model} variant="outline" className="text-xs">
+                                <Badge key={model} variant="outline" className={`text-xs ${darkMode ? 'border-cyan-500/30 text-cyan-200' : ''}`}>
                                   {model}
                                 </Badge>
                               ))}
                               {key.models.length > 3 && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className={`text-xs ${darkMode ? 'border-cyan-500/30 text-cyan-200' : ''}`}>
                                   +{key.models.length - 3} more
                                 </Badge>
                               )}
@@ -327,7 +331,7 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => toggleActive(key.id)}
-                                className="border-cyan-300 hover:bg-cyan-50"
+                                className={darkMode ? 'border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-100' : 'border-cyan-300 hover:bg-cyan-50'}
                               >
                                 Set Active
                               </Button>
@@ -342,7 +346,7 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                             </Button>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                           Added {new Date(key.createdAt).toLocaleDateString()}
                         </p>
                       </CardContent>
