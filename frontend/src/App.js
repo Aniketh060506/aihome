@@ -10,6 +10,7 @@ function App() {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -17,11 +18,13 @@ function App() {
     const savedConversations = localStorage.getItem('conversations');
     const savedActiveConv = localStorage.getItem('activeConversation');
     const savedModel = localStorage.getItem('selectedModel');
+    const savedDarkMode = localStorage.getItem('darkMode');
 
     if (savedKeys) setApiKeys(JSON.parse(savedKeys));
     if (savedConversations) setConversations(JSON.parse(savedConversations));
     if (savedActiveConv) setActiveConversation(savedActiveConv);
     if (savedModel) setSelectedModel(savedModel);
+    if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
   }, []);
 
   // Save to localStorage whenever data changes
@@ -45,6 +48,15 @@ function App() {
     }
   }, [selectedModel]);
 
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark-theme');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+    }
+  }, [darkMode]);
+
   return (
     <div className="App">
       <BrowserRouter>
@@ -60,6 +72,8 @@ function App() {
                 setActiveConversation={setActiveConversation}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
               />
             }
           />
@@ -69,6 +83,8 @@ function App() {
               <SettingsPage
                 apiKeys={apiKeys}
                 setApiKeys={setApiKeys}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
               />
             }
           />

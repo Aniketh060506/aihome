@@ -16,7 +16,9 @@ import {
   Zap,
   Sparkles,
   Bot,
-  User
+  User,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { getModelsForProvider } from '../mock';
@@ -36,7 +38,9 @@ const ChatInterface = ({
   activeConversation,
   setActiveConversation,
   selectedModel,
-  setSelectedModel
+  setSelectedModel,
+  darkMode,
+  setDarkMode
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -108,7 +112,6 @@ const ChatInterface = ({
 
     if (!activeConversation) {
       createNewConversation();
-      // Need to wait for next render cycle
       setTimeout(() => sendMessage(), 100);
       return;
     }
@@ -137,7 +140,6 @@ const ChatInterface = ({
     setIsLoading(true);
 
     try {
-      // Get all messages for this conversation
       const currentConv = updatedConversations.find(c => c.id === activeConversation);
       const messages = currentConv.messages.map(msg => ({
         role: msg.role,
@@ -145,7 +147,6 @@ const ChatInterface = ({
         timestamp: msg.timestamp
       }));
 
-      // Call AI API
       const response = await apiService.chatCompletion(
         messages,
         activeKey.key,
@@ -201,34 +202,60 @@ const ChatInterface = ({
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen relative">
       {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? 'w-80' : 'w-0'
-        } transition-all duration-300 bg-white/40 backdrop-blur-lg border-r border-cyan-200/50 overflow-hidden`}
+        } transition-all duration-300 ${
+          darkMode 
+            ? 'bg-black/40 border-cyan-500/30 cyber-border backdrop-blur-xl' 
+            : 'bg-white/40 border-cyan-200/50 backdrop-blur-lg'
+        } border-r overflow-hidden`}
       >
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-cyan-600" />
-              <h2 className="font-bold text-lg bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent">
+              <Shield className={`w-6 h-6 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+              <h2 className={`font-bold text-lg ${
+                darkMode 
+                  ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'
+                  : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'
+              }`}>
                 CyberAI
               </h2>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => navigate('/settings')}
-              className="hover:bg-cyan-100/50"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDarkMode(!darkMode)}
+                className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
+              >
+                {darkMode ? (
+                  <Sun className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-gray-600" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate('/settings')}
+                className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           <Button
             onClick={createNewConversation}
-            className="w-full bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            className={`w-full ${
+              darkMode
+                ? 'bg-gradient-to-r from-cyan-600 to-green-600 hover:from-cyan-500 hover:to-green-500 text-white shadow-lg hover:shadow-cyan-500/50 cyber-glow'
+                : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl'
+            } transition-all duration-300`}
           >
             <Plus className="w-4 h-4 mr-2" />
             New Chat
@@ -237,12 +264,14 @@ const ChatInterface = ({
           {/* Model Selection */}
           {availableModels.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-cyan-600" />
+              <label className={`text-sm font-medium flex items-center gap-2 ${
+                darkMode ? 'text-cyan-300' : 'text-gray-700'
+              }`}>
+                <Sparkles className={`w-4 h-4 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                 Select Model
               </label>
               <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="bg-white/60 border-cyan-200">
+                <SelectTrigger className={darkMode ? 'bg-black/40 border-cyan-500/30 text-cyan-100' : 'bg-white/60 border-cyan-200'}>
                   <SelectValue placeholder="Choose a model" />
                 </SelectTrigger>
                 <SelectContent>
@@ -264,18 +293,22 @@ const ChatInterface = ({
                   key={conv.id}
                   className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md group ${
                     activeConversation === conv.id
-                      ? 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 shadow-md'
-                      : 'bg-white/60 border-gray-200 hover:bg-white/80'
+                      ? darkMode
+                        ? 'bg-cyan-950/50 border-cyan-500/50 shadow-md shadow-cyan-500/20'
+                        : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 shadow-md'
+                      : darkMode
+                        ? 'bg-black/40 border-cyan-500/20 hover:bg-black/60'
+                        : 'bg-white/60 border-gray-200 hover:bg-white/80'
                   }`}
                   onClick={() => setActiveConversation(conv.id)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <MessageSquare className="w-4 h-4 text-cyan-600 flex-shrink-0" />
-                        <h3 className="text-sm font-medium truncate">{conv.title}</h3>
+                        <MessageSquare className={`w-4 h-4 flex-shrink-0 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                        <h3 className={`text-sm font-medium truncate ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>{conv.title}</h3>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {new Date(conv.updatedAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -301,25 +334,33 @@ const ChatInterface = ({
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white/40 backdrop-blur-lg border-b border-cyan-200/50 p-4">
+        <div className={`${
+          darkMode
+            ? 'bg-black/40 border-cyan-500/30 cyber-border backdrop-blur-xl'
+            : 'bg-white/40 border-cyan-200/50 backdrop-blur-lg'
+        } border-b p-4`}>
           <div className="flex items-center justify-between max-w-5xl mx-auto">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hover:bg-cyan-100/50"
+                className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
               >
                 <MessageSquare className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="font-bold text-xl bg-gradient-to-r from-cyan-600 via-green-600 to-blue-600 bg-clip-text text-transparent flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-cyan-600" />
+                <h1 className={`font-bold text-xl flex items-center gap-2 ${
+                  darkMode
+                    ? 'bg-gradient-to-r from-cyan-400 via-green-400 to-blue-400 bg-clip-text text-transparent neon-text'
+                    : 'bg-gradient-to-r from-cyan-600 via-green-600 to-blue-600 bg-clip-text text-transparent'
+                }`}>
+                  <Lock className={`w-5 h-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                   Cybersecurity AI Assistant
                 </h1>
                 {activeKey && (
-                  <p className="text-xs text-gray-600 flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-green-500" />
+                  <p className={`text-xs flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <Zap className={`w-3 h-3 ${darkMode ? 'text-green-400' : 'text-green-500'}`} />
                     Using {activeKey.provider} - {selectedModel || 'No model selected'}
                   </p>
                 )}
@@ -335,15 +376,23 @@ const ChatInterface = ({
               <div className="text-center py-20 space-y-6 animate-fade-in">
                 <div className="flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-green-400 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                    <Shield className="w-24 h-24 text-cyan-600 relative" />
+                    <div className={`absolute inset-0 rounded-full blur-xl opacity-50 animate-pulse ${
+                      darkMode
+                        ? 'bg-gradient-to-r from-cyan-500 to-green-500'
+                        : 'bg-gradient-to-r from-cyan-400 to-green-400'
+                    }`}></div>
+                    <Shield className={`w-24 h-24 relative ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent mb-2">
+                  <h2 className={`text-3xl font-bold mb-2 ${
+                    darkMode
+                      ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'
+                      : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'
+                  }`}>
                     Welcome to CyberAI
                   </h2>
-                  <p className="text-gray-600 text-lg">Your personal cybersecurity learning assistant</p>
+                  <p className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Your personal cybersecurity learning assistant</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mt-8">
                   {[
@@ -351,10 +400,14 @@ const ChatInterface = ({
                     { icon: Lock, title: 'Best Practices', desc: 'Secure coding guidelines' },
                     { icon: Zap, title: 'Quick Answers', desc: 'Get instant help' }
                   ].map((item, idx) => (
-                    <Card key={idx} className="p-6 bg-white/60 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                      <item.icon className="w-10 h-10 text-cyan-600 mb-3 mx-auto" />
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.desc}</p>
+                    <Card key={idx} className={`p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
+                      darkMode
+                        ? 'bg-black/40 border-cyan-500/30 cyber-border backdrop-blur-sm hover:shadow-cyan-500/20'
+                        : 'bg-white/60 backdrop-blur-sm'
+                    }`}>
+                      <item.icon className={`w-10 h-10 mb-3 mx-auto ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                      <h3 className={`font-semibold mb-1 ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>{item.title}</h3>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{item.desc}</p>
                     </Card>
                   ))}
                 </div>
@@ -368,7 +421,9 @@ const ChatInterface = ({
                   }`}
                 >
                   {msg.role === 'assistant' && (
-                    <Avatar className="w-10 h-10 border-2 border-cyan-300 shadow-md">
+                    <Avatar className={`w-10 h-10 border-2 shadow-md ${
+                      darkMode ? 'border-cyan-500' : 'border-cyan-300'
+                    }`}>
                       <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-green-500 text-white">
                         <Bot className="w-5 h-5" />
                       </AvatarFallback>
@@ -377,21 +432,31 @@ const ChatInterface = ({
                   <Card
                     className={`max-w-2xl p-4 shadow-md ${
                       msg.role === 'user'
-                        ? 'bg-gradient-to-br from-cyan-500 to-green-500 text-white border-none'
-                        : 'bg-white/80 backdrop-blur-sm border-cyan-200'
+                        ? darkMode
+                          ? 'bg-gradient-to-br from-cyan-600 to-green-600 text-white border-cyan-500/50 shadow-cyan-500/20'
+                          : 'bg-gradient-to-br from-cyan-500 to-green-500 text-white border-none'
+                        : darkMode
+                          ? 'bg-black/60 border-cyan-500/30 cyber-border text-cyan-50 backdrop-blur-sm'
+                          : 'bg-white/80 backdrop-blur-sm border-cyan-200'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                     <p
                       className={`text-xs mt-2 ${
-                        msg.role === 'user' ? 'text-cyan-100' : 'text-gray-500'
+                        msg.role === 'user' 
+                          ? 'text-cyan-100' 
+                          : darkMode 
+                            ? 'text-gray-500' 
+                            : 'text-gray-500'
                       }`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString()}
                     </p>
                   </Card>
                   {msg.role === 'user' && (
-                    <Avatar className="w-10 h-10 border-2 border-green-300 shadow-md">
+                    <Avatar className={`w-10 h-10 border-2 shadow-md ${
+                      darkMode ? 'border-green-500' : 'border-green-300'
+                    }`}>
                       <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white">
                         <User className="w-5 h-5" />
                       </AvatarFallback>
@@ -402,16 +467,18 @@ const ChatInterface = ({
             )}
             {isLoading && (
               <div className="flex gap-4 justify-start animate-fade-in">
-                <Avatar className="w-10 h-10 border-2 border-cyan-300 shadow-md">
+                <Avatar className={`w-10 h-10 border-2 shadow-md ${
+                  darkMode ? 'border-cyan-500' : 'border-cyan-300'
+                }`}>
                   <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-green-500 text-white">
                     <Bot className="w-5 h-5" />
                   </AvatarFallback>
                 </Avatar>
-                <Card className="max-w-2xl p-4 bg-white/80 backdrop-blur-sm border-cyan-200">
+                <Card className={darkMode ? 'max-w-2xl p-4 bg-black/60 border-cyan-500/30 cyber-border backdrop-blur-sm' : 'max-w-2xl p-4 bg-white/80 backdrop-blur-sm border-cyan-200'}>
                   <div className="flex gap-2">
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${darkMode ? 'bg-cyan-400' : 'bg-cyan-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${darkMode ? 'bg-green-400' : 'bg-green-500'}`} style={{ animationDelay: '0.2s' }}></div>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${darkMode ? 'bg-blue-400' : 'bg-blue-500'}`} style={{ animationDelay: '0.4s' }}></div>
                   </div>
                 </Card>
               </div>
@@ -421,7 +488,11 @@ const ChatInterface = ({
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white/40 backdrop-blur-lg border-t border-cyan-200/50 p-4">
+        <div className={`${
+          darkMode
+            ? 'bg-black/40 border-cyan-500/30 cyber-border backdrop-blur-xl'
+            : 'bg-white/40 border-cyan-200/50 backdrop-blur-lg'
+        } border-t p-4`}>
           <div className="max-w-4xl mx-auto">
             <div className="flex gap-3">
               <Input
@@ -429,13 +500,21 @@ const ChatInterface = ({
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about cybersecurity, vulnerabilities, best practices..."
-                className="flex-1 bg-white/80 border-cyan-200 focus:border-cyan-400 focus:ring-cyan-400 shadow-sm"
+                className={`flex-1 shadow-sm ${
+                  darkMode
+                    ? 'bg-black/60 border-cyan-500/30 text-cyan-50 placeholder:text-gray-500 focus:border-cyan-400 focus:ring-cyan-400'
+                    : 'bg-white/80 border-cyan-200 focus:border-cyan-400 focus:ring-cyan-400'
+                }`}
                 disabled={isLoading}
               />
               <Button
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading}
-                className="bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6"
+                className={`${
+                  darkMode
+                    ? 'bg-gradient-to-r from-cyan-600 to-green-600 hover:from-cyan-500 hover:to-green-500 text-white shadow-lg hover:shadow-cyan-500/50 cyber-glow'
+                    : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl'
+                } transition-all duration-300 px-6`}
               >
                 <Send className="w-4 h-4" />
               </Button>
