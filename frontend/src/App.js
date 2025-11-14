@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ChatInterface from './components/ChatInterface';
@@ -14,46 +14,70 @@ function App() {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const savedKeys = localStorage.getItem('apiKeys');
-    const savedConversations = localStorage.getItem('conversations');
-    const savedActiveConv = localStorage.getItem('activeConversation');
-    const savedModel = localStorage.getItem('selectedModel');
-    const savedDarkMode = localStorage.getItem('darkMode');
+    try {
+      const savedKeys = localStorage.getItem('apiKeys');
+      const savedConversations = localStorage.getItem('conversations');
+      const savedActiveConv = localStorage.getItem('activeConversation');
+      const savedModel = localStorage.getItem('selectedModel');
+      const savedDarkMode = localStorage.getItem('darkMode');
 
-    if (savedKeys) setApiKeys(JSON.parse(savedKeys));
-    if (savedConversations) setConversations(JSON.parse(savedConversations));
-    if (savedActiveConv) setActiveConversation(savedActiveConv);
-    if (savedModel) setSelectedModel(savedModel);
-    if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
+      if (savedKeys) setApiKeys(JSON.parse(savedKeys));
+      if (savedConversations) setConversations(JSON.parse(savedConversations));
+      if (savedActiveConv) setActiveConversation(savedActiveConv);
+      if (savedModel) setSelectedModel(savedModel);
+      if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+    }
   }, []);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+    try {
+      localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+    } catch (error) {
+      console.error('Error saving API keys:', error);
+    }
   }, [apiKeys]);
 
   useEffect(() => {
-    localStorage.setItem('conversations', JSON.stringify(conversations));
+    try {
+      localStorage.setItem('conversations', JSON.stringify(conversations));
+    } catch (error) {
+      console.error('Error saving conversations:', error);
+    }
   }, [conversations]);
 
   useEffect(() => {
     if (activeConversation) {
-      localStorage.setItem('activeConversation', activeConversation);
+      try {
+        localStorage.setItem('activeConversation', activeConversation);
+      } catch (error) {
+        console.error('Error saving active conversation:', error);
+      }
     }
   }, [activeConversation]);
 
   useEffect(() => {
     if (selectedModel) {
-      localStorage.setItem('selectedModel', selectedModel);
+      try {
+        localStorage.setItem('selectedModel', selectedModel);
+      } catch (error) {
+        console.error('Error saving selected model:', error);
+      }
     }
   }, [selectedModel]);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.documentElement.classList.remove('dark-theme');
+    try {
+      localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      if (darkMode) {
+        document.documentElement.classList.add('dark-theme');
+      } else {
+        document.documentElement.classList.remove('dark-theme');
+      }
+    } catch (error) {
+      console.error('Error saving dark mode:', error);
     }
   }, [darkMode]);
 

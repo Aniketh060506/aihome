@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -155,7 +155,7 @@ const ChatInterface = ({
         activeConversation
       );
 
-      if (response.success) {
+      if (response.success && response.message) {
         const assistantMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -175,6 +175,11 @@ const ChatInterface = ({
         });
 
         setConversations(finalConversations);
+        
+        toast({
+          title: 'Response received',
+          description: 'AI has responded to your message.',
+        });
       } else {
         toast({
           title: 'Error',
@@ -184,9 +189,10 @@ const ChatInterface = ({
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to send message';
       toast({
-        title: 'Error',
-        description: 'Failed to send message. Please check your API key.',
+        title: 'Connection Error',
+        description: `${errorMessage}. Please check your API key and internet connection.`,
         variant: 'destructive'
       });
     } finally {
@@ -270,7 +276,7 @@ const ChatInterface = ({
                 <Sparkles className={`w-4 h-4 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                 Select Model
               </label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <Select value={selectedModel || ''} onValueChange={setSelectedModel}>
                 <SelectTrigger className={darkMode ? 'bg-black/40 border-cyan-500/30 text-cyan-100' : 'bg-white/60 border-cyan-200'}>
                   <SelectValue placeholder="Choose a model" />
                 </SelectTrigger>
@@ -413,7 +419,7 @@ const ChatInterface = ({
                 </div>
               </div>
             ) : (
-              currentConversation.messages.map((msg, idx) => (
+              currentConversation.messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex gap-4 animate-fade-in ${

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -37,14 +37,28 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
       if (result.is_valid && result.provider !== 'unknown') {
         setDetectedProvider(result.provider);
         setDetectedModels(result.models);
+        toast({
+          title: 'Key detected',
+          description: `Found ${result.provider.toUpperCase()} key with ${result.models.length} models`,
+        });
       } else {
         setDetectedProvider('unknown');
         setDetectedModels([]);
+        toast({
+          title: 'Unknown key format',
+          description: 'Could not detect API provider',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Error detecting key:', error);
       setDetectedProvider('unknown');
       setDetectedModels([]);
+      toast({
+        title: 'Detection failed',
+        description: 'Could not connect to backend. Please check if services are running.',
+        variant: 'destructive'
+      });
     } finally {
       setIsDetecting(false);
     }
@@ -106,228 +120,185 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
       isActive: key.id === id
     })));
     toast({
-      title: 'Active key updated',
-      description: 'The selected key is now active.',
+      title: 'Active key changed',
+      description: 'The selected key is now active for chat.',
     });
   };
 
   const toggleShowKey = (id) => {
-    setShowKeys(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const providerColors = {
-    openai: 'bg-green-100 text-green-800 border-green-300',
-    anthropic: 'bg-orange-100 text-orange-800 border-orange-300',
-    google: 'bg-blue-100 text-blue-800 border-blue-300'
+    setShowKeys(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className={`min-h-screen ${
+      darkMode
+        ? 'bg-gradient-to-br from-black via-gray-900 to-black text-cyan-50'
+        : 'bg-gradient-to-br from-cyan-50 via-white to-green-50 text-gray-900'
+    }`}>
+      <div className="container max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className={`text-3xl font-bold ${
-                darkMode
-                  ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'
-                  : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'
-              }`}>
-                API Settings
-              </h1>
-              <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your AI provider keys</p>
-            </div>
-          </div>
           <Button
+            variant="outline"
+            onClick={() => navigate('/')}
+            className={darkMode ? 'border-cyan-500/30 hover:bg-cyan-500/10' : 'border-cyan-200 hover:bg-cyan-50'}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Chat
+          </Button>
+          <Button
+            size="sm"
             variant="ghost"
             onClick={() => setDarkMode(!darkMode)}
             className={darkMode ? 'hover:bg-cyan-500/10' : 'hover:bg-cyan-100/50'}
           >
             {darkMode ? (
-              <Sun className="w-5 h-5 text-cyan-400" />
+              <Sun className="w-4 h-4 text-cyan-400" />
             ) : (
-              <Moon className="w-5 h-5 text-gray-600" />
+              <Moon className="w-4 h-4 text-gray-600" />
             )}
           </Button>
         </div>
 
-        {/* Add New Key Card */}
-        <Card className={darkMode ? 'bg-black/40 backdrop-blur-lg border-cyan-500/30 cyber-border shadow-lg shadow-cyan-500/10' : 'bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg'}>
+        {/* Settings Card */}
+        <Card className={darkMode ? 'bg-black/40 border-cyan-500/30 backdrop-blur-xl' : 'bg-white/80 backdrop-blur-sm border-cyan-200'}>
           <CardHeader>
-            <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-cyan-100' : ''}`}>
-              <Plus className={`w-5 h-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
-              Add New API Key
+            <CardTitle className={`flex items-center gap-2 text-2xl ${
+              darkMode ? 'text-cyan-300' : 'text-cyan-700'
+            }`}>
+              <Key className="w-6 h-6" />
+              API Key Settings
             </CardTitle>
-            <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-              Enter your API key and we'll automatically detect the provider
+            <CardDescription className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+              Manage your API keys for different AI providers (OpenAI, Anthropic, Google)
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="keyName" className={darkMode ? 'text-cyan-300' : ''}>Key Name</Label>
-              <Input
-                id="keyName"
-                placeholder="e.g., My OpenAI Key"
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
-                className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50 placeholder:text-gray-500' : 'bg-white/80 border-cyan-200'}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apiKey" className={darkMode ? 'text-cyan-300' : ''}>API Key</Label>
-              <div className="relative">
+          <CardContent className="space-y-6">
+            {/* Add New Key */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="keyName" className={darkMode ? 'text-cyan-200' : 'text-gray-700'}>
+                  Key Name
+                </Label>
+                <Input
+                  id="keyName"
+                  placeholder="My OpenAI Key"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50' : 'bg-white border-cyan-200'}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="apiKey" className={darkMode ? 'text-cyan-200' : 'text-gray-700'}>
+                  API Key
+                </Label>
                 <Input
                   id="apiKey"
                   type="password"
-                  placeholder="Paste your API key here..."
+                  placeholder="sk-..."
                   value={newApiKey}
                   onChange={(e) => handleKeyChange(e.target.value)}
-                  className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50 placeholder:text-gray-500' : 'bg-white/80 border-cyan-200'}
+                  className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50' : 'bg-white border-cyan-200'}
                 />
-                {isDetecting && (
-                  <Loader2 className={`w-4 h-4 animate-spin absolute right-3 top-3 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
-                )}
               </div>
+
+              {isDetecting && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Loader2 className={`w-4 h-4 animate-spin ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                  <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Detecting provider...</span>
+                </div>
+              )}
+
+              {detectedProvider && detectedProvider !== 'unknown' && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Detected: <strong>{detectedProvider.toUpperCase()}</strong> with {detectedModels.length} models
+                  </span>
+                </div>
+              )}
+
+              {detectedProvider === 'unknown' && newApiKey.length > 10 && (
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Unknown key format. Please check your API key.
+                  </span>
+                </div>
+              )}
+
+              <Button
+                onClick={addApiKey}
+                disabled={!detectedProvider || detectedProvider === 'unknown' || !newKeyName.trim()}
+                className={`w-full ${
+                  darkMode
+                    ? 'bg-gradient-to-r from-cyan-600 to-green-600 hover:from-cyan-500 hover:to-green-500'
+                    : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600'
+                } text-white`}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add API Key
+              </Button>
             </div>
 
-            {/* Detection Result */}
-            {detectedProvider && detectedProvider !== 'unknown' && (
-              <Card className={darkMode ? 'bg-cyan-950/50 border-cyan-500/50 animate-fade-in' : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 animate-fade-in'}>
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className={`w-5 h-5 mt-0.5 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <div className="flex-1">
-                      <p className={`font-semibold mb-2 ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>
-                        Detected: {detectedProvider.toUpperCase()}
-                      </p>
-                      <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Available Models:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {detectedModels.map(model => (
-                          <Badge key={model} variant="secondary" className={darkMode ? 'bg-black/60 text-cyan-100' : 'bg-white/60'}>
-                            {model}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {detectedProvider === 'unknown' && newApiKey && !isDetecting && (
-              <Card className={darkMode ? 'bg-red-950/50 border-red-500/50 animate-fade-in' : 'bg-red-50 border-red-300 animate-fade-in'}>
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className={`w-5 h-5 mt-0.5 ${darkMode ? 'text-red-400' : 'text-red-600'}`} />
-                    <div>
-                      <p className={`font-semibold ${darkMode ? 'text-red-100' : 'text-gray-800'}`}>Unknown key format</p>
-                      <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Supported: OpenAI (sk-...), Anthropic (sk-ant-...), Google (AIza...)
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Button
-              onClick={addApiKey}
-              className={`w-full transition-all duration-300 ${
-                darkMode
-                  ? 'bg-gradient-to-r from-cyan-600 to-green-600 hover:from-cyan-500 hover:to-green-500 text-white shadow-lg hover:shadow-cyan-500/50 cyber-glow'
-                  : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl'
-              }`}
-              disabled={isDetecting}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add API Key
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Existing Keys */}
-        <Card className={darkMode ? 'bg-black/40 backdrop-blur-lg border-cyan-500/30 cyber-border shadow-lg shadow-cyan-500/10' : 'bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg'}>
-          <CardHeader>
-            <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-cyan-100' : ''}`}>
-              <Key className={`w-5 h-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
-              Your API Keys ({apiKeys.length})
-            </CardTitle>
-            <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-              Manage and switch between your configured API keys
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
+            {/* Existing Keys */}
+            {apiKeys.length > 0 && (
               <div className="space-y-4">
-                {apiKeys.length === 0 ? (
-                  <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <Key className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>No API keys configured yet</p>
-                    <p className="text-sm mt-1">Add your first key to get started</p>
-                  </div>
-                ) : (
-                  apiKeys.map(key => (
-                    <Card
-                      key={key.id}
-                      className={`transition-all duration-200 ${
-                        key.isActive
-                          ? darkMode
-                            ? 'bg-cyan-950/50 border-cyan-500/50 shadow-md shadow-cyan-500/20'
-                            : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 shadow-md'
-                          : darkMode
-                            ? 'bg-black/40 border-cyan-500/20'
-                            : 'bg-white/60 border-gray-200'
-                      }`}
-                    >
-                      <CardContent className="pt-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className={`font-semibold ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>{key.name}</h3>
-                              <Badge className={providerColors[key.provider]}>
+                <h3 className={`font-semibold text-lg ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                  Your API Keys ({apiKeys.length})
+                </h3>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-3">
+                    {apiKeys.map((key) => (
+                      <Card
+                        key={key.id}
+                        className={`p-4 ${
+                          key.isActive
+                            ? darkMode
+                              ? 'bg-cyan-950/50 border-cyan-500/50 shadow-md shadow-cyan-500/20'
+                              : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300'
+                            : darkMode
+                              ? 'bg-black/60 border-cyan-500/20'
+                              : 'bg-white border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <h4 className={`font-semibold ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>
+                                {key.name}
+                              </h4>
+                              {key.isActive && (
+                                <Badge className="bg-green-500 text-white">Active</Badge>
+                              )}
+                              <Badge variant="outline" className={darkMode ? 'border-cyan-400 text-cyan-400' : 'border-cyan-600 text-cyan-600'}>
                                 {key.provider.toUpperCase()}
                               </Badge>
-                              {key.isActive && (
-                                <Badge className={darkMode ? 'bg-green-600 text-white' : 'bg-green-500 text-white'}>
-                                  Active
-                                </Badge>
-                              )}
                             </div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <code className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-black/60 text-cyan-100' : 'bg-gray-100'}`}>
+                            <div className="flex items-center gap-2">
+                              <code className={`text-sm font-mono ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {showKeys[key.id] ? key.key : key.maskedKey}
                               </code>
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => toggleShowKey(key.id)}
+                                className="h-6 w-6 p-0"
                               >
                                 {showKeys[key.id] ? (
-                                  <EyeOff className="w-4 h-4" />
+                                  <EyeOff className="w-3 h-3" />
                                 ) : (
-                                  <Eye className="w-4 h-4" />
+                                  <Eye className="w-3 h-3" />
                                 )}
                               </Button>
                             </div>
-                            <div className="flex flex-wrap gap-1">
-                              {key.models.slice(0, 3).map(model => (
-                                <Badge key={model} variant="outline" className={`text-xs ${darkMode ? 'border-cyan-500/30 text-cyan-200' : ''}`}>
-                                  {model}
-                                </Badge>
-                              ))}
-                              {key.models.length > 3 && (
-                                <Badge variant="outline" className={`text-xs ${darkMode ? 'border-cyan-500/30 text-cyan-200' : ''}`}>
-                                  +{key.models.length - 3} more
-                                </Badge>
-                              )}
-                            </div>
+                            <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                              {key.models.length} models available • Added {new Date(key.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
                           <div className="flex gap-2">
                             {!key.isActive && (
@@ -335,30 +306,35 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => toggleActive(key.id)}
-                                className={darkMode ? 'border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-100' : 'border-cyan-300 hover:bg-cyan-50'}
+                                className={darkMode ? 'border-cyan-500/30 hover:bg-cyan-500/10' : 'border-cyan-200 hover:bg-cyan-50'}
                               >
                                 Set Active
                               </Button>
                             )}
                             <Button
                               size="sm"
-                              variant="ghost"
+                              variant="destructive"
                               onClick={() => deleteKey(key.id)}
-                              className="text-red-500 hover:bg-red-50"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
-                        <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          Added {new Date(key.createdAt).toLocaleDateString()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
+            )}
+
+            {apiKeys.length === 0 && (
+              <div className="text-center py-12">
+                <Key className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-cyan-400/50' : 'text-cyan-300'}`} />
+                <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No API keys added yet. Add your first key to get started!
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
