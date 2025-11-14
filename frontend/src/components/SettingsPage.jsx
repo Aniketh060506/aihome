@@ -135,7 +135,11 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className={`text-3xl font-bold ${\n                darkMode\n                  ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'\n                  : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'\n              }`}>
+              <h1 className={`text-3xl font-bold ${
+                darkMode
+                  ? 'bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent neon-text'
+                  : 'bg-gradient-to-r from-cyan-600 to-green-600 bg-clip-text text-transparent'
+              }`}>
                 API Settings
               </h1>
               <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your AI provider keys</p>
