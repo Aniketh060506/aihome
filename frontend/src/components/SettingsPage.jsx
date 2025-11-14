@@ -10,7 +10,7 @@ import { ArrowLeft, Plus, Trash2, Key, Eye, EyeOff, CheckCircle2, AlertCircle, L
 import { useToast } from '../hooks/use-toast';
 import { apiService } from '../services/apiService';
 
-const SettingsPage = ({ apiKeys, setApiKeys }) => {
+const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [newKeyName, setNewKeyName] = useState('');
