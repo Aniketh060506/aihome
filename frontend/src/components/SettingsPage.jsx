@@ -155,29 +155,29 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
         </div>
 
         {/* Add New Key Card */}
-        <Card className="bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg">
+        <Card className={darkMode ? 'bg-black/40 backdrop-blur-lg border-cyan-500/30 cyber-border shadow-lg shadow-cyan-500/10' : 'bg-white/60 backdrop-blur-lg border-cyan-200 shadow-lg'}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-cyan-600" />
+            <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-cyan-100' : ''}`}>
+              <Plus className={`w-5 h-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
               Add New API Key
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={darkMode ? 'text-gray-400' : ''}>
               Enter your API key and we'll automatically detect the provider
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="keyName">Key Name</Label>
+              <Label htmlFor="keyName" className={darkMode ? 'text-cyan-300' : ''}>Key Name</Label>
               <Input
                 id="keyName"
                 placeholder="e.g., My OpenAI Key"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
-                className="bg-white/80 border-cyan-200"
+                className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50 placeholder:text-gray-500' : 'bg-white/80 border-cyan-200'}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="apiKey">API Key</Label>
+              <Label htmlFor="apiKey" className={darkMode ? 'text-cyan-300' : ''}>API Key</Label>
               <div className="relative">
                 <Input
                   id="apiKey"
@@ -185,10 +185,10 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
                   placeholder="Paste your API key here..."
                   value={newApiKey}
                   onChange={(e) => handleKeyChange(e.target.value)}
-                  className="bg-white/80 border-cyan-200"
+                  className={darkMode ? 'bg-black/60 border-cyan-500/30 text-cyan-50 placeholder:text-gray-500' : 'bg-white/80 border-cyan-200'}
                 />
                 {isDetecting && (
-                  <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-cyan-600" />
+                  <Loader2 className={`w-4 h-4 animate-spin absolute right-3 top-3 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                 )}
               </div>
             </div>
