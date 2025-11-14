@@ -195,18 +195,18 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
 
             {/* Detection Result */}
             {detectedProvider && detectedProvider !== 'unknown' && (
-              <Card className="bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 animate-fade-in">
+              <Card className={darkMode ? 'bg-cyan-950/50 border-cyan-500/50 animate-fade-in' : 'bg-gradient-to-r from-cyan-50 to-green-50 border-cyan-300 animate-fade-in'}>
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                    <CheckCircle2 className={`w-5 h-5 mt-0.5 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-800 mb-2">
+                      <p className={`font-semibold mb-2 ${darkMode ? 'text-cyan-100' : 'text-gray-800'}`}>
                         Detected: {detectedProvider.toUpperCase()}
                       </p>
-                      <p className="text-sm text-gray-600 mb-2">Available Models:</p>
+                      <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Available Models:</p>
                       <div className="flex flex-wrap gap-2">
                         {detectedModels.map(model => (
-                          <Badge key={model} variant="secondary" className="bg-white/60">
+                          <Badge key={model} variant="secondary" className={darkMode ? 'bg-black/60 text-cyan-100' : 'bg-white/60'}>
                             {model}
                           </Badge>
                         ))}
@@ -218,13 +218,13 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
             )}
 
             {detectedProvider === 'unknown' && newApiKey && !isDetecting && (
-              <Card className="bg-red-50 border-red-300 animate-fade-in">
+              <Card className={darkMode ? 'bg-red-950/50 border-red-500/50 animate-fade-in' : 'bg-red-50 border-red-300 animate-fade-in'}>
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <AlertCircle className={`w-5 h-5 mt-0.5 ${darkMode ? 'text-red-400' : 'text-red-600'}`} />
                     <div>
-                      <p className="font-semibold text-gray-800">Unknown key format</p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className={`font-semibold ${darkMode ? 'text-red-100' : 'text-gray-800'}`}>Unknown key format</p>
+                      <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Supported: OpenAI (sk-...), Anthropic (sk-ant-...), Google (AIza...)
                       </p>
                     </div>
@@ -235,7 +235,11 @@ const SettingsPage = ({ apiKeys, setApiKeys, darkMode, setDarkMode }) => {
 
             <Button
               onClick={addApiKey}
-              className="w-full bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              className={`w-full transition-all duration-300 ${
+                darkMode
+                  ? 'bg-gradient-to-r from-cyan-600 to-green-600 hover:from-cyan-500 hover:to-green-500 text-white shadow-lg hover:shadow-cyan-500/50 cyber-glow'
+                  : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl'
+              }`}
               disabled={isDetecting}
             >
               <Plus className="w-4 h-4 mr-2" />
