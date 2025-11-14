@@ -147,7 +147,7 @@ class BackendTester:
     
     def test_detect_api_key(self):
         """Test POST /api/keys/detect - Detect API key provider"""
-        print("\\n=== Testing API Key Detection Endpoint ===")
+        print("\n=== Testing API Key Detection Endpoint ===")
         
         test_cases = [
             {
@@ -173,7 +173,7 @@ class BackendTester:
         ]
         
         for test_case in test_cases:
-            print(f"\\nTesting: {test_case['name']}")
+            print(f"\nTesting: {test_case['name']}")
             
             data = {"api_key": test_case["api_key"]}
             result = self.run_curl_command("POST", "/keys/detect", data)
